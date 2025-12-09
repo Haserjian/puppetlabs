@@ -1,0 +1,86 @@
+scenario_id: "stress-budget-sweep-001"
+name: "Budget Tier Sweep"
+description: "Test solver behavior across different resource budget tiers"
+category: "budget_sweep"
+domain: "algebra"
+tags: ["budget", "resource_limits", "tier_comparison"]
+
+stress_config:
+  budget_tiers:
+    - tier: "light"
+      max_wall_time_ms: 5000
+    - tier: "standard"
+      max_wall_time_ms: 30000
+    - tier: "deep_search"
+      max_wall_time_ms: 300000
+
+  tolerance_sweep:
+    absolute: [1e-9, 1e-6]
+    relative: [1e-6, 1e-3]
+
+  expected_behavior:
+    mode: "resource_dependent"
+    min_confidence: 0.5
+
+edge_cases:
+  - case_id: "moderate_complexity_light"
+    category: "complexity"
+    description: "Moderate problem on light budget"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions: ["x^4 - 5*x^3 + 5*x^2 + 5*x - 6 = 0"]
+      variables: ["x"]
+    expected_result:
+      outcome: "degraded_success"
+      confidence_min: 0.4
+
+  - case_id: "moderate_complexity_standard"
+    category: "complexity"
+    description: "Moderate problem on standard budget"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions: ["x^4 - 5*x^3 + 5*x^2 + 5*x - 6 = 0"]
+      variables: ["x"]
+    expected_result:
+      outcome: "success"
+      confidence_min: 0.75
+
+  - case_id: "moderate_complexity_deep"
+    category: "complexity"
+    description: "Moderate problem on deep_search budget"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions: ["x^4 - 5*x^3 + 5*x^2 + 5*x - 6 = 0"]
+      variables: ["x"]
+    expected_result:
+      outcome: "success"
+      confidence_min: 0.85
+
+  - case_id: "system_complexity"
+    category: "complexity"
+    description: "3x3 system across budgets"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions:
+        - "2*x + y - z = 1"
+        - "x - y + 2*z = 2"
+        - "x + y + z = 3"
+      variables: ["x", "y", "z"]
+    expected_result:
+      outcome: "success"
+      confidence_min: 0.65
+
+promotion:
+  shadow_mode: true
+  promotion_criteria:
+    min_runs: 20
+    max_failure_rate: 0.15
+    min_avg_confidence: 0.6

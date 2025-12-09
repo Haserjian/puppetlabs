@@ -1,0 +1,70 @@
+scenario_id: "stress-solver-overflow-001"
+name: "Solver Overflow Scenarios"
+description: "Test solver behavior under numerical overflow with extreme coefficients"
+category: "edge_cases"
+domain: "algebra"
+tags: ["overflow", "numeric_limits", "quadratic"]
+
+stress_config:
+  budget_tiers:
+    - tier: "standard"
+      max_wall_time_ms: 30000
+    - tier: "light"
+      max_wall_time_ms: 5000
+
+  tolerance_sweep:
+    absolute: [1e-9, 1e-6, 1e-3]
+    relative: [1e-6, 1e-3, 1e-1]
+
+  expected_behavior:
+    mode: "graceful_degradation"
+    min_confidence: 0.5
+
+edge_cases:
+  - case_id: "overflow_coefficients_1"
+    category: "overflow"
+    description: "Quadratic with coefficients near float64 max"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions: ["x^2 - 1e308*x + 1e307 = 0"]
+      variables: ["x"]
+    expected_result:
+      outcome: "degraded_success"
+      confidence_min: 0.4
+
+  - case_id: "overflow_coefficients_2"
+    category: "overflow"
+    description: "Cubic with large coefficients"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions: ["1e100*x^3 - 1e100*x^2 + 1e99*x - 1e98 = 0"]
+      variables: ["x"]
+    expected_result:
+      outcome: "degraded_success"
+      confidence_min: 0.5
+
+  - case_id: "overflow_system"
+    category: "overflow"
+    description: "System with large coefficient matrix"
+    problem:
+      type: "solve"
+      problem_type: "solve"
+      domain: "algebra"
+      expressions:
+        - "1e100*x + 1e100*y = 1e101"
+        - "1e100*x - 1e100*y = 1e99"
+      variables: ["x", "y"]
+    expected_result:
+      outcome: "degraded_success"
+      confidence_min: 0.5
+
+promotion:
+  shadow_mode: true
+  promotion_criteria:
+    min_runs: 15
+    max_failure_rate: 0.20
+    min_avg_confidence: 0.5
