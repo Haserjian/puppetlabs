@@ -1,0 +1,204 @@
+{
+  "$schema": "quintet-ultra-math-v1.2",
+  "description": "High-stakes healthcare optimization: Math + Build with treaty protection",
+  
+  "intent_envelope": {
+    "intent_id": "int-healthcare-001",
+    "raw_query": "Optimize drug dosage for patient cohort and generate deployment code",
+    "proposed_action": "Mathematical optimization + code generation for clinical deployment",
+    "goal": "Find optimal dosage parameters and create safe deployment pipeline",
+    "rationale": "Patient outcomes can be improved with personalized dosing",
+    "constraints": [
+      "Must not exceed maximum safe dose (100mg/kg)",
+      "Must handle edge cases (renal impairment, pediatric, geriatric)",
+      "Must include safety checks in generated code"
+    ],
+    "invariants": [
+      "Patient safety > optimization accuracy",
+      "No deployment without validation",
+      "All outputs must be logged"
+    ],
+    "risk_level": "critical",
+    "world_impact_category": "healthcare_medicine",
+    "requires_build": true,
+    "requires_math": true,
+    "allowed_modes": ["math", "build"],
+    "open_questions": [
+      "What is the acceptable confidence threshold?",
+      "Should we include Monte Carlo validation?"
+    ],
+    "source": "user",
+    "created_at": "2025-01-15T10:00:00Z"
+  },
+  
+  "quintet_synthesis": {
+    "synthesis_id": "syn-healthcare-001",
+    "decision": "proceed",
+    "confidence": 0.85,
+    "votes": [
+      {
+        "agent": "alpha",
+        "position": "approve",
+        "confidence": 0.9,
+        "rationale": "Clear benefit to patient outcomes, risk is manageable with proper safeguards",
+        "concerns": [],
+        "suggestions": ["Ensure IRB compliance documentation"]
+      },
+      {
+        "agent": "beta",
+        "position": "approve",
+        "confidence": 0.85,
+        "rationale": "Technically feasible with SymPy optimization + Python code generation",
+        "concerns": ["Edge case handling needs explicit tests"],
+        "suggestions": ["Add property-based tests for dosing bounds"]
+      },
+      {
+        "agent": "gamma",
+        "position": "modify",
+        "confidence": 0.75,
+        "rationale": "Approve with additional safety validation requirements",
+        "concerns": [
+          "Edge case handling unclear for extreme weights",
+          "Need explicit safety bounds in code"
+        ],
+        "suggestions": [
+          "Require 0.95 confidence from Math Mode",
+          "Add explicit safety assertions in generated code"
+        ]
+      },
+      {
+        "agent": "delta",
+        "position": "approve",
+        "confidence": 0.9,
+        "rationale": "Resources available, timeline reasonable",
+        "concerns": [],
+        "suggestions": []
+      },
+      {
+        "agent": "epsilon",
+        "position": "approve",
+        "confidence": 0.85,
+        "rationale": "Consensus achieved with Gamma's safety modifications incorporated",
+        "concerns": [],
+        "suggestions": ["Document Gamma's concerns in final report"]
+      }
+    ],
+    "dissent": true,
+    "dissent_summary": "Gamma requests additional safety validation (0.95 confidence threshold) and explicit safety bounds",
+    "proposed_action": "Run Math Mode optimization first, then Build Mode for code generation",
+    "requires_build": true,
+    "requires_math": true,
+    "primary_mode": "math",
+    "risk_level": "critical",
+    "world_impact_category": "healthcare_medicine",
+    "guardrails": [
+      "Math Mode must achieve 0.95 confidence",
+      "Build Mode must include safety tests",
+      "Guardian must review before execution",
+      "All outputs logged to audit trail"
+    ],
+    "open_questions": [],
+    "evidence_refs": [],
+    "deliberation_time_ms": 1250.5
+  },
+  
+  "treaty": {
+    "treaty_id": "treaty-healthcare-001",
+    "name": "Healthcare Clinical Deployment Treaty",
+    "parties": [
+      {
+        "party_id": "user-001",
+        "party_type": "user",
+        "role": "requester",
+        "obligations": ["Provide accurate patient data", "Review outputs before clinical use"],
+        "rights": ["Receive optimized dosing parameters", "Request modifications"]
+      },
+      {
+        "party_id": "quintet-system",
+        "party_type": "system",
+        "role": "executor",
+        "obligations": [
+          "Achieve 0.95 confidence on optimization",
+          "Generate safe, tested code",
+          "Log all decisions and outputs"
+        ],
+        "rights": ["Refuse execution if safety thresholds not met"]
+      },
+      {
+        "party_id": "guardian",
+        "party_type": "guardian",
+        "role": "reviewer",
+        "obligations": ["Review all outputs before deployment approval"],
+        "rights": ["Veto deployment if safety concerns exist"]
+      }
+    ],
+    "guarantees": [
+      "No deployment without Math Mode validation at 0.95+ confidence",
+      "All generated code includes safety bounds assertions",
+      "Complete audit trail of all decisions",
+      "Guardian review before any clinical deployment"
+    ],
+    "required_receipts": [
+      "math_problem_receipt",
+      "math_solution_receipt",
+      "math_validation_receipt",
+      "build_blueprint_receipt",
+      "build_validation_receipt",
+      "guardian_approval_receipt"
+    ],
+    "required_validations": [
+      "math_confidence >= 0.95",
+      "safety_bounds_verified",
+      "edge_cases_tested"
+    ],
+    "veto_conditions": [
+      "Math Mode confidence < 0.95",
+      "Safety bounds violated in testing",
+      "Guardian identifies unaddressed risk"
+    ],
+    "veto_parties": ["guardian", "gamma"],
+    "domains": ["healthcare_medicine"],
+    "expiry": null,
+    "status": "active"
+  },
+  
+  "expected_math_problem": {
+    "problem_type": "optimize",
+    "domain": "optimization",
+    "description": "Minimize adverse events while maximizing efficacy for drug dosing",
+    "expressions": [
+      "efficacy(d) = 1 - exp(-k1 * d)",
+      "risk(d) = 1 / (1 + exp(-k2 * (d - d_max)))"
+    ],
+    "variables": ["d", "k1", "k2", "d_max"],
+    "constraints": [
+      "0 < d <= 100",
+      "k1 > 0",
+      "k2 > 0"
+    ],
+    "goal": "maximize efficacy(d) - lambda * risk(d)"
+  },
+  
+  "expected_build_blueprint": {
+    "goal": "Generate safe dosing calculation module",
+    "files": [
+      {
+        "path": "dosing/calculator.py",
+        "action": "create",
+        "description": "Core dosing calculation with safety bounds"
+      },
+      {
+        "path": "dosing/validators.py",
+        "action": "create",
+        "description": "Input validation and safety checks"
+      },
+      {
+        "path": "tests/test_dosing.py",
+        "action": "create",
+        "description": "Property-based tests for safety bounds"
+      }
+    ]
+  }
+}
+
+

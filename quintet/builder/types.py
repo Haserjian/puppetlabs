@@ -1,0 +1,297 @@
+"""
+Build Mode Types - Builder-Specific Only
+=========================================
+
+This module defines ONLY builder-specific types.
+All shared types are imported from quintet.core.types.
+
+DO NOT redefine: ValidationResult, ColorTileGrid, CognitionSummary, etc.
+"""
+
+from dataclasses import dataclass, field
+from typing import List, Dict, Optional, Any
+from enum import Enum
+import uuid
+
+# Import shared types from core - DO NOT REDEFINE THESE
+from quintet.core.types import (
+    ModeResultBase,
+    ValidationResult,
+    ValidationCheck,
+    ContextFlowEntry,
+    ColorTileGrid,
+    CognitionSummary,
+    IncompletenessAssessment,
+    WorldImpactAssessment,
+    ModeError,
+    ErrorCode,
+    SPEC_VERSION,
+)
+
+
+# =============================================================================
+# BUILD INTENT
+# =============================================================================
+
+class BuildCategory(Enum):
+    """Categories of build requests."""
+    CREATE_FILE = "create_file"
+    CREATE_MODULE = "create_module"
+    CREATE_PROJECT = "create_project"
+    MODIFY_FILE = "modify_file"
+    REFACTOR = "refactor"
+    ADD_FEATURE = "add_feature"
+    FIX_BUG = "fix_bug"
+    ADD_TESTS = "add_tests"
+    CONFIGURE = "configure"
+    DEPLOY = "deploy"
+
+
+@dataclass
+class BuildIntent:
+    """Classification of a build request's intent."""
+    is_build: bool
+    confidence: float           # 0.0-1.0
+    category: BuildCategory
+    description: str
+    
+    # Extracted context
+    target_files: List[str] = field(default_factory=list)
+    target_modules: List[str] = field(default_factory=list)
+    technologies: List[str] = field(default_factory=list)
+    
+    # Keywords that triggered detection
+    keywords_matched: List[str] = field(default_factory=list)
+    raw_query: str = ""
+
+
+# =============================================================================
+# PROJECT CONTEXT
+# =============================================================================
+
+@dataclass
+class FileInfo:
+    """Information about an existing file."""
+    path: str
+    size_bytes: int
+    language: Optional[str] = None
+    imports: List[str] = field(default_factory=list)
+    exports: List[str] = field(default_factory=list)
+    summary: Optional[str] = None
+
+
+@dataclass
+class ProjectContext:
+    """Context gathered from scanning the project."""
+    project_root: str
+    existing_files: List[FileInfo] = field(default_factory=list)
+    detected_frameworks: List[str] = field(default_factory=list)
+    detected_patterns: List[str] = field(default_factory=list)
+    package_manager: Optional[str] = None  # "pip", "npm", "cargo", etc.
+    entry_points: List[str] = field(default_factory=list)
+    test_framework: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "project_root": self.project_root,
+            "existing_files": [f.path for f in self.existing_files],
+            "detected_frameworks": self.detected_frameworks,
+            "detected_patterns": self.detected_patterns,
+            "package_manager": self.package_manager,
+            "test_framework": self.test_framework
+        }
+
+
+# =============================================================================
+# FILE SPEC
+# =============================================================================
+
+@dataclass
+class FileSpec:
+    """Specification for a file to create or modify."""
+    path: str
+    action: str                 # "create" | "modify" | "delete"
+    content: Optional[str] = None
+    description: str = ""
+    language: Optional[str] = None
+    
+    # For modifications
+    original_content: Optional[str] = None
+    diff: Optional[str] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "path": self.path,
+            "action": self.action,
+            "content_length": len(self.content) if self.content else 0,
+            "description": self.description,
+            "language": self.language
+        }
+
+
+# =============================================================================
+# PROJECT BLUEPRINT
+# =============================================================================
+
+@dataclass
+class ShellCommand:
+    """A shell command to execute."""
+    command: str
+    description: str
+    working_dir: Optional[str] = None
+    timeout_seconds: int = 60
+    required: bool = True       # If False, failure doesn't abort build
+
+
+@dataclass
+class TestPlan:
+    """Plan for testing the build."""
+    test_commands: List[ShellCommand] = field(default_factory=list)
+    expected_outputs: List[str] = field(default_factory=list)
+    coverage_target: Optional[float] = None
+
+
+@dataclass
+class RiskAssessment:
+    """Assessment of build risks."""
+    level: str                  # "low" | "medium" | "high"
+    factors: List[str] = field(default_factory=list)
+    mitigations: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ProjectBlueprint:
+    """
+    Complete build specification.
+    
+    Generated by SpecGenerator, executed by BuilderExecutor.
+    """
+    blueprint_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    
+    # What to build
+    goal: str = ""
+    description: str = ""
+    
+    # Files to create/modify
+    files: List[FileSpec] = field(default_factory=list)
+    
+    # Commands to run
+    pre_commands: List[ShellCommand] = field(default_factory=list)   # Before file changes
+    post_commands: List[ShellCommand] = field(default_factory=list)  # After file changes
+    
+    # Testing
+    test_plan: Optional[TestPlan] = None
+    
+    # Risk assessment
+    risks: Optional[RiskAssessment] = None
+    
+    # Context used
+    context: Optional[ProjectContext] = None
+    
+    # Approval status
+    approved: bool = False
+
+    # Flow / cognition metadata (keeps Ultra Mode + UI in sync)
+    context_flow: List[ContextFlowEntry] = field(default_factory=list)
+    contradictions: List[str] = field(default_factory=list)  # tuples expressed as strings for now
+    recursion_seeds: List[str] = field(default_factory=list)
+    recursion_postmortems: List[str] = field(default_factory=list)
+    next_steps: List[str] = field(default_factory=list)
+    incompleteness: Optional[IncompletenessAssessment] = None
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "blueprint_id": self.blueprint_id,
+            "goal": self.goal,
+            "description": self.description,
+            "files": [f.to_dict() for f in self.files],
+            "pre_commands": [c.command for c in self.pre_commands],
+            "post_commands": [c.command for c in self.post_commands],
+            "has_test_plan": self.test_plan is not None,
+            "risk_level": self.risks.level if self.risks else "unknown",
+            "approved": self.approved,
+            "context_flow": [cf.to_dict() for cf in self.context_flow],
+            "contradictions": self.contradictions,
+            "recursion_seeds": self.recursion_seeds,
+            "recursion_postmortems": self.recursion_postmortems,
+            "next_steps": self.next_steps,
+            "incompleteness": self.incompleteness.to_dict() if self.incompleteness else None,
+        }
+
+
+# =============================================================================
+# BUILD RESULT
+# =============================================================================
+
+@dataclass
+class FileResult:
+    """Result of creating/modifying a single file."""
+    path: str
+    action: str
+    success: bool
+    error: Optional[str] = None
+    bytes_written: int = 0
+
+
+@dataclass
+class CommandResult:
+    """Result of executing a shell command."""
+    command: str
+    success: bool
+    exit_code: int = 0
+    stdout: str = ""
+    stderr: str = ""
+    duration_ms: float = 0.0
+
+
+@dataclass
+class BuildResult(ModeResultBase):
+    """
+    Complete Build Mode result.
+    
+    Extends ModeResultBase to include builder-specific fields.
+    """
+    mode: str = "build"
+    
+    # Build-specific
+    intent: Optional[BuildIntent] = None
+    blueprint: Optional[ProjectBlueprint] = None
+    
+    # Execution results
+    file_results: List[FileResult] = field(default_factory=list)
+    command_results: List[CommandResult] = field(default_factory=list)
+    
+    # Validation
+    validation: Optional[ValidationResult] = None
+    
+    # Rollback info
+    rollback_available: bool = False
+    rollback_data: Optional[Dict[str, Any]] = None
+    
+    # Human-friendly
+    conversation_response: str = ""
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Full serialization including base and build-specific fields."""
+        d = self.to_base_dict()
+        d.update({
+            "intent": {
+                "is_build": self.intent.is_build,
+                "confidence": self.intent.confidence,
+                "category": self.intent.category.value,
+            } if self.intent else None,
+            "blueprint": self.blueprint.to_dict() if self.blueprint else None,
+            "file_results": [
+                {"path": fr.path, "action": fr.action, "success": fr.success}
+                for fr in self.file_results
+            ],
+            "command_results": [
+                {"command": cr.command, "success": cr.success, "exit_code": cr.exit_code}
+                for cr in self.command_results
+            ],
+            "validation": self.validation.to_dict() if self.validation else None,
+            "rollback_available": self.rollback_available,
+            "conversation_response": self.conversation_response
+        })
+        return d
+

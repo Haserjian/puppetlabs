@@ -1,0 +1,68 @@
+# Quintet Requirements
+# ====================
+#
+# NOTE: pyproject.toml is the source of truth for dependencies.
+# This file is provided for quick pip install without editable mode.
+#
+# For development:
+#   pip install -e ".[math,dev]"
+#
+# Spec Version: quintet-ultra-math-v1.2
+
+# =============================================================================
+# CORE (Always Required)
+# =============================================================================
+pydantic>=2.0
+
+# =============================================================================
+# TIER 1: Math Mode (Required for Math Mode)
+# =============================================================================
+sympy>=1.12
+numpy>=1.24
+scipy>=1.10
+
+# =============================================================================
+# API (Optional - for Build Mode HTTP API)
+# =============================================================================
+fastapi>=0.100
+uvicorn>=0.23
+
+# =============================================================================
+# DEVELOPMENT (for running tests)
+# =============================================================================
+pytest>=7.0
+pytest-cov>=4.0
+pytest-asyncio>=0.21
+black>=23.0
+ruff>=0.1
+
+# =============================================================================
+# LLM FABRIC (for async backends)
+# =============================================================================
+aiohttp>=3.8
+pyyaml>=6.0
+
+# =============================================================================
+# TIER 2: Optional Packs (uncomment as needed)
+# =============================================================================
+
+# Optimization Pack
+# cvxpy>=1.4
+
+# Statistics Pack
+# statsmodels>=0.14
+# scikit-learn>=1.3
+
+# Probabilistic Programming
+# numpyro>=0.13
+# jax>=0.4
+
+# Deep Learning
+# torch>=2.0
+
+# PDE Pack (requires separate system deps)
+# fenics-dolfinx
+
+# Proof Memory (embeddings)
+# sentence-transformers>=2.2
+# faiss-cpu>=1.7

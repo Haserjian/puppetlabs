@@ -71,7 +71,7 @@ edge_cases:
       outcome: "success"
       confidence_min: 0.6
 
-promotion:
+promotion_config:
   shadow_mode: true
   promotion_criteria:
     min_runs: 20

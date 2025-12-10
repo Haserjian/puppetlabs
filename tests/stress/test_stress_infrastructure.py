@@ -405,7 +405,8 @@ class TestPromotionManager:
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "test.db"
             tracker = CoverageTracker(str(db_path))
-            yield StressPromotionManager(tracker)
+            manager = StressPromotionManager(tracker)
+            yield manager
 
     def test_promotion_initialization(self, promotion_manager):
         """Initialize promotion manager."""
@@ -520,6 +521,224 @@ class TestPromotionManager:
         assert "ready_for_promotion" in summary
         assert "near_promotion_ready" in summary
         assert "not_ready" in summary
+
+
+class TestPromotionActions:
+    """Tests for PromotionAction system (Phase 0: Close the Causal Loop)."""
+
+    @pytest.fixture
+    def promotion_manager(self):
+        """Create promotion manager."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_path = Path(tmpdir) / "test.db"
+            tracker = CoverageTracker(str(db_path))
+            manager = StressPromotionManager(tracker)
+            yield manager
+
+    @pytest.fixture
+    def eligible_decision(self):
+        """Create an eligible promotion decision."""
+        return PromotionDecision(
+            scenario_id="test-scenario",
+            eligible=True,
+            reason="All checks passed",
+            stats={"total_runs": 25, "passed_runs": 24, "failure_rate": 0.04},
+            confidence_score=0.85,
+            checks_passed={"min_runs": True, "failure_rate": True, "avg_confidence": True}
+        )
+
+    def test_promotion_action_creation(self, eligible_decision):
+        """Create a PromotionAction."""
+        from quintet.stress.promotion import PromotionAction
+
+        action = PromotionAction(
+            scenario_id="test-scenario",
+            decision=eligible_decision,
+            action="promote",
+            reason="Test promotion",
+            result={"changed": True}
+        )
+
+        assert action.scenario_id == "test-scenario"
+        assert action.action == "promote"
+        assert action.decision.eligible is True
+
+    def test_promotion_action_serialization(self, eligible_decision):
+        """Serialize PromotionAction to dict."""
+        from quintet.stress.promotion import PromotionAction
+
+        action = PromotionAction(
+            scenario_id="test-scenario",
+            decision=eligible_decision,
+            action="promote",
+            reason="Test promotion",
+            result={"changed": True},
+            old_policy={"standard": {"max_wall_time_ms": 30000}},
+            new_policy={"standard": {"max_wall_time_ms": 60000}}
+        )
+
+        data = action.to_dict()
+        assert data["scenario_id"] == "test-scenario"
+        assert data["action"] == "promote"
+        assert "executed_at" in data
+        assert data["old_policy"]["standard"]["max_wall_time_ms"] == 30000
+        assert data["new_policy"]["standard"]["max_wall_time_ms"] == 60000
+
+    def test_execute_promotion_updates_policy(self, promotion_manager, eligible_decision):
+        """Execute promotion actually updates RESOURCE_LIMITS."""
+        from quintet.core.types import RESOURCE_LIMITS
+
+        # Get original value
+        original_time = RESOURCE_LIMITS["standard"].max_wall_time_ms
+
+        # Execute promotion
+        policy_changes = {
+            "standard": {
+                "max_wall_time_ms": original_time + 10000
+            }
+        }
+
+        action = promotion_manager.execute_promotion(
+            scenario_id="test-scenario",
+            decision=eligible_decision,
+            policy_changes=policy_changes
+        )
+
+        # Check policy was actually updated
+        assert RESOURCE_LIMITS["standard"].max_wall_time_ms == original_time + 10000
+        assert action.action == "promote"
+        assert action.old_policy is not None
+        assert action.new_policy is not None
+
+        # Verify audit trail
+        history = promotion_manager.get_promotion_history()
+        assert len(history) == 1
+        assert history[0]["action"] == "promote"
+
+    def test_rollback_promotion(self, promotion_manager, eligible_decision):
+        """Rollback a promotion restores old policy."""
+        from quintet.core.types import RESOURCE_LIMITS
+
+        # Get original value
+        original_time = RESOURCE_LIMITS["standard"].max_wall_time_ms
+
+        # Execute promotion
+        policy_changes = {
+            "standard": {
+                "max_wall_time_ms": original_time + 10000
+            }
+        }
+
+        promotion_manager.execute_promotion(
+            scenario_id="test-scenario",
+            decision=eligible_decision,
+            policy_changes=policy_changes
+        )
+
+        # Verify it changed
+        assert RESOURCE_LIMITS["standard"].max_wall_time_ms == original_time + 10000
+
+        # Rollback
+        rollback_action = promotion_manager.rollback_promotion(
+            scenario_id="test-scenario",
+            reason="Metrics degraded after promotion"
+        )
+
+        # Verify it was restored
+        assert RESOURCE_LIMITS["standard"].max_wall_time_ms == original_time
+        assert rollback_action.action == "rollback"
+        assert "Metrics degraded" in rollback_action.reason
+
+        # Verify audit trail
+        history = promotion_manager.get_promotion_history()
+        assert len(history) == 2
+        assert history[0]["action"] == "promote"
+        assert history[1]["action"] == "rollback"
+
+    def test_rollback_without_snapshot_fails(self, promotion_manager):
+        """Rollback fails if no snapshot exists."""
+        with pytest.raises(ValueError, match="No policy snapshot found"):
+            promotion_manager.rollback_promotion(
+                scenario_id="nonexistent-scenario",
+                reason="Test"
+            )
+
+    def test_create_regression_scenario(self, promotion_manager):
+        """Create regression scenario after failed promotion."""
+        regression = promotion_manager.create_regression_scenario(
+            failed_scenario_id="budget_sweep",
+            failure_reason="Timeout rate increased to 25% after promotion"
+        )
+
+        assert regression["scenario_id"] == "budget_sweep_regression"
+        assert regression["category"] == "regression"
+        assert "learned_constraint" in regression["tags"]
+        assert regression["metadata"]["created_from_failure"] == "budget_sweep"
+        assert "Timeout rate" in regression["metadata"]["failure_reason"]
+
+        # Verify it has stricter promotion criteria
+        assert regression["promotion_config"]["max_failure_rate"] == 0.05
+
+    def test_policy_snapshot_captures_all_tiers(self, promotion_manager):
+        """Policy snapshot captures all resource limit tiers."""
+        snapshot = promotion_manager._snapshot_current_policy()
+
+        assert "light" in snapshot
+        assert "standard" in snapshot
+        assert "deep_search" in snapshot
+
+        # Check all fields are captured
+        for tier in ["light", "standard", "deep_search"]:
+            assert "max_wall_time_ms" in snapshot[tier]
+            assert "max_plans" in snapshot[tier]
+            assert "max_solutions_per_plan" in snapshot[tier]
+            assert "max_verification_paths" in snapshot[tier]
+            assert "max_memory_mb" in snapshot[tier]
+            assert "max_shell_runtime_ms" in snapshot[tier]
+
+    def test_execute_promotion_with_multiple_tiers(self, promotion_manager, eligible_decision):
+        """Execute promotion affecting multiple budget tiers."""
+        from quintet.core.types import RESOURCE_LIMITS
+
+        original_light_time = RESOURCE_LIMITS["light"].max_wall_time_ms
+        original_standard_time = RESOURCE_LIMITS["standard"].max_wall_time_ms
+
+        policy_changes = {
+            "light": {"max_wall_time_ms": original_light_time + 1000},
+            "standard": {"max_wall_time_ms": original_standard_time + 5000}
+        }
+
+        action = promotion_manager.execute_promotion(
+            scenario_id="multi-tier-test",
+            decision=eligible_decision,
+            policy_changes=policy_changes
+        )
+
+        assert RESOURCE_LIMITS["light"].max_wall_time_ms == original_light_time + 1000
+        assert RESOURCE_LIMITS["standard"].max_wall_time_ms == original_standard_time + 5000
+        assert action.action == "promote"
+
+    def test_promotion_audit_trail(self, promotion_manager, eligible_decision):
+        """Promotion history maintains audit trail."""
+        # Execute several actions
+        for i in range(3):
+            policy_changes = {"standard": {"max_plans": 3 + i}}
+            promotion_manager.execute_promotion(
+                scenario_id=f"scenario-{i}",
+                decision=eligible_decision,
+                policy_changes=policy_changes
+            )
+
+        history = promotion_manager.get_promotion_history()
+        assert len(history) == 3
+
+        # Check each entry has required fields
+        for entry in history:
+            assert "scenario_id" in entry
+            assert "action" in entry
+            assert "executed_at" in entry
+            assert "decision" in entry
+            assert entry["decision"]["confidence_score"] == 0.85
 
 
 class TestStressDecorator:

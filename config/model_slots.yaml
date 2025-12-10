@@ -1,0 +1,153 @@
+# Quintet Model Slots Configuration
+# ==================================
+#
+# This file maps logical slot names to concrete provider/model pairs.
+# Ultra Mode, Math Mode, Guardian all use slot names, never vendor names.
+#
+# To switch from cloud to local:
+#   1. Change provider to "ollama"
+#   2. Change model to your local model name
+#   3. Everything else just works
+#
+# To upgrade to GPT-5.1 / Opus 4.5 / Gemini 3 Pro:
+#   1. Add the new provider backend (if needed)
+#   2. Change the model name here
+#   3. That's it
+
+# Global settings
+default_timeout_ms: 60000
+max_calls_per_episode: 50
+max_tokens_per_episode: 100000
+
+slots:
+  # ==========================================================================
+  # ULTRA MODE SLOTS
+  # ==========================================================================
+  
+  ultra_planner:
+    # The main planning model for Ultra Mode
+    # Needs strong reasoning, good at structured output
+    provider: ollama
+    model: llama3.1:70b
+    max_tokens: 8192
+    temperature: 0.2
+    json_mode: false
+    allow_in_high_risk: true
+    
+    # Fallback if primary is unavailable
+    # fallback_slots: [local_dev]
+  
+  builder_synthesizer:
+    # Code generation and file synthesis
+    # Needs to be good at code, lower temperature for consistency
+    provider: ollama
+    model: codestral:latest
+    max_tokens: 4096
+    temperature: 0.1
+    json_mode: false
+    allow_in_high_risk: true
+  
+  # ==========================================================================
+  # MATH MODE SLOTS
+  # ==========================================================================
+  
+  math_helper:
+    # Math reasoning and problem decomposition
+    # Used by MathModeOrchestrator for heuristics
+    provider: ollama
+    model: llama3.1:8b
+    max_tokens: 2048
+    temperature: 0.1
+    json_mode: false
+    allow_in_high_risk: true
+  
+  # ==========================================================================
+  # GUARDIAN / SAFETY SLOTS
+  # ==========================================================================
+  
+  guardian_advisor:
+    # Safety checks and policy decisions
+    # Very low temperature for consistency
+    provider: ollama
+    model: llama3.1:8b
+    max_tokens: 1024
+    temperature: 0.0
+    json_mode: true
+    allow_in_high_risk: true  # Guardian must work in high-risk
+  
+  # ==========================================================================
+  # GENERAL PURPOSE SLOTS
+  # ==========================================================================
+  
+  casual_chat:
+    # General conversation, explanations
+    # Higher temperature for more natural responses
+    provider: ollama
+    model: llama3.1:8b
+    max_tokens: 2048
+    temperature: 0.7
+    json_mode: false
+    allow_in_high_risk: false
+  
+  explanation:
+    # Generating explanations for solutions
+    provider: ollama
+    model: llama3.1:8b
+    max_tokens: 2048
+    temperature: 0.3
+    json_mode: false
+    allow_in_high_risk: true
+  
+  verification:
+    # Verifying outputs (self-critique)
+    provider: ollama
+    model: llama3.1:8b
+    max_tokens: 1024
+    temperature: 0.0
+    json_mode: true
+    allow_in_high_risk: true
+  
+  # ==========================================================================
+  # LOCAL DEV / TESTING SLOT
+  # ==========================================================================
+  
+  local_dev:
+    # Fast local model for development
+    provider: ollama
+    model: mistral-nemo:latest
+    max_tokens: 2048
+    temperature: 0.2
+    json_mode: false
+    allow_in_high_risk: false
+
+# ==========================================================================
+# EXAMPLE: Cloud Configuration (uncomment to use)
+# ==========================================================================
+#
+# slots:
+#   ultra_planner:
+#     provider: openrouter
+#     model: anthropic/claude-3.5-opus-20240620
+#     max_tokens: 8192
+#     temperature: 0.2
+#
+#   builder_synthesizer:
+#     provider: groq
+#     model: llama-3.3-70b-versatile
+#     max_tokens: 4096
+#     temperature: 0.1
+#
+#   math_helper:
+#     provider: mistral
+#     model: mistral-large-latest
+#     max_tokens: 2048
+#     temperature: 0.1
+#
+#   guardian_advisor:
+#     provider: openai
+#     model: gpt-4o-mini
+#     max_tokens: 1024
+#     temperature: 0.0
+#     json_mode: true
+
+
