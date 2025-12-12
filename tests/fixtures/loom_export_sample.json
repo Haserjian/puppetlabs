@@ -1,0 +1,281 @@
+{
+  "metadata": {
+    "export_version": "1.0",
+    "exported_at": "2025-12-09T14:00:00Z",
+    "source": "loom_policy_export",
+    "episode_count": 15,
+    "strata_count": 6
+  },
+  "episodes": [
+    {
+      "episode_id": "ep-001",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Optimize treatment protocol for patient cohort",
+      "outcome": "success",
+      "confidence": 0.92,
+      "latency_ms": 1250,
+      "dignity_score": 0.88,
+      "coherence_delta": 0.15,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T10:00:00Z",
+      "policy": {
+        "brain_temperature": 0.7,
+        "guardian_strictness": 0.8,
+        "perception_threshold": 0.6
+      }
+    },
+    {
+      "episode_id": "ep-002",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Analyze drug interaction patterns",
+      "outcome": "success",
+      "confidence": 0.85,
+      "latency_ms": 1100,
+      "dignity_score": 0.82,
+      "coherence_delta": 0.12,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T10:15:00Z",
+      "policy": {
+        "brain_temperature": 0.7,
+        "guardian_strictness": 0.8,
+        "perception_threshold": 0.6
+      }
+    },
+    {
+      "episode_id": "ep-003",
+      "mode": "guardian",
+      "domain": "clinical",
+      "intent": "Review high-risk medication order",
+      "outcome": "success",
+      "confidence": 0.95,
+      "latency_ms": 850,
+      "dignity_score": 0.91,
+      "coherence_delta": 0.08,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T10:30:00Z",
+      "policy": {
+        "brain_temperature": 0.6,
+        "guardian_strictness": 0.9,
+        "perception_threshold": 0.7
+      }
+    },
+    {
+      "episode_id": "ep-004",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Generate care plan recommendations",
+      "outcome": "partial",
+      "confidence": 0.68,
+      "latency_ms": 1800,
+      "dignity_score": 0.65,
+      "coherence_delta": -0.05,
+      "guardian_verdict": "soft_fail",
+      "event_time": "2025-12-08T10:45:00Z",
+      "policy": {
+        "brain_temperature": 0.9,
+        "guardian_strictness": 0.7,
+        "perception_threshold": 0.5
+      }
+    },
+    {
+      "episode_id": "ep-005",
+      "mode": "brain",
+      "domain": "finance",
+      "intent": "Forecast budget allocation",
+      "outcome": "success",
+      "confidence": 0.88,
+      "latency_ms": 950,
+      "dignity_score": 0.79,
+      "coherence_delta": 0.11,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T11:00:00Z",
+      "policy": {
+        "brain_temperature": 0.7,
+        "guardian_strictness": 0.75,
+        "perception_threshold": 0.6
+      }
+    },
+    {
+      "episode_id": "ep-006",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Optimize diagnostic workflow",
+      "outcome": "success",
+      "confidence": 0.91,
+      "latency_ms": 1150,
+      "dignity_score": 0.86,
+      "coherence_delta": 0.13,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T11:15:00Z",
+      "policy": {
+        "brain_temperature": 0.7,
+        "guardian_strictness": 0.8,
+        "perception_threshold": 0.6
+      }
+    },
+    {
+      "episode_id": "ep-007",
+      "mode": "brain",
+      "domain": "finance",
+      "intent": "Risk assessment for investment",
+      "outcome": "success",
+      "confidence": 0.83,
+      "latency_ms": 1050,
+      "dignity_score": 0.77,
+      "coherence_delta": 0.09,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T11:30:00Z",
+      "policy": {
+        "brain_temperature": 0.6,
+        "guardian_strictness": 0.75,
+        "perception_threshold": 0.65
+      }
+    },
+    {
+      "episode_id": "ep-008",
+      "mode": "guardian",
+      "domain": "ops",
+      "intent": "Validate system deployment",
+      "outcome": "success",
+      "confidence": 0.97,
+      "latency_ms": 750,
+      "dignity_score": 0.93,
+      "coherence_delta": 0.06,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T11:45:00Z",
+      "policy": {
+        "brain_temperature": 0.5,
+        "guardian_strictness": 0.9,
+        "perception_threshold": 0.75
+      }
+    },
+    {
+      "episode_id": "ep-009",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Treatment efficacy analysis",
+      "outcome": "failure",
+      "confidence": 0.45,
+      "latency_ms": 2100,
+      "dignity_score": 0.42,
+      "coherence_delta": -0.18,
+      "guardian_verdict": "hard_fail",
+      "event_time": "2025-12-08T12:00:00Z",
+      "policy": {
+        "brain_temperature": 0.95,
+        "guardian_strictness": 0.6,
+        "perception_threshold": 0.4
+      }
+    },
+    {
+      "episode_id": "ep-010",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Patient outcome prediction",
+      "outcome": "success",
+      "confidence": 0.89,
+      "latency_ms": 1200,
+      "dignity_score": 0.84,
+      "coherence_delta": 0.14,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T12:15:00Z",
+      "policy": {
+        "brain_temperature": 0.7,
+        "guardian_strictness": 0.8,
+        "perception_threshold": 0.6
+      }
+    },
+    {
+      "episode_id": "ep-011",
+      "mode": "brain",
+      "domain": "sandbox",
+      "intent": "Exploratory data analysis",
+      "outcome": "success",
+      "confidence": 0.76,
+      "latency_ms": 900,
+      "dignity_score": 0.71,
+      "coherence_delta": 0.08,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T12:30:00Z",
+      "policy": {
+        "brain_temperature": 0.8,
+        "guardian_strictness": 0.5,
+        "perception_threshold": 0.5
+      }
+    },
+    {
+      "episode_id": "ep-012",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Resource allocation optimization",
+      "outcome": "success",
+      "confidence": 0.87,
+      "latency_ms": 1300,
+      "dignity_score": 0.81,
+      "coherence_delta": 0.11,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T12:45:00Z",
+      "policy": {
+        "brain_temperature": 0.7,
+        "guardian_strictness": 0.8,
+        "perception_threshold": 0.6
+      }
+    },
+    {
+      "episode_id": "ep-013",
+      "mode": "guardian",
+      "domain": "clinical",
+      "intent": "Safety check for experimental protocol",
+      "outcome": "success",
+      "confidence": 0.94,
+      "latency_ms": 800,
+      "dignity_score": 0.89,
+      "coherence_delta": 0.07,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T13:00:00Z",
+      "policy": {
+        "brain_temperature": 0.6,
+        "guardian_strictness": 0.85,
+        "perception_threshold": 0.7
+      }
+    },
+    {
+      "episode_id": "ep-014",
+      "mode": "council",
+      "domain": "clinical",
+      "intent": "Clinical decision support",
+      "outcome": "partial",
+      "confidence": 0.72,
+      "latency_ms": 1600,
+      "dignity_score": 0.68,
+      "coherence_delta": 0.03,
+      "guardian_verdict": "soft_fail",
+      "event_time": "2025-12-08T13:15:00Z",
+      "policy": {
+        "brain_temperature": 0.85,
+        "guardian_strictness": 0.75,
+        "perception_threshold": 0.55
+      }
+    },
+    {
+      "episode_id": "ep-015",
+      "mode": "brain",
+      "domain": "finance",
+      "intent": "Portfolio rebalancing",
+      "outcome": "success",
+      "confidence": 0.86,
+      "latency_ms": 1000,
+      "dignity_score": 0.78,
+      "coherence_delta": 0.10,
+      "guardian_verdict": "pass",
+      "event_time": "2025-12-08T13:30:00Z",
+      "policy": {
+        "brain_temperature": 0.65,
+        "guardian_strictness": 0.75,
+        "perception_threshold": 0.65
+      }
+    }
+  ]
+}
