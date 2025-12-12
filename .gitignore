@@ -85,3 +85,6 @@ output/
 *.pem
 *.key
 secrets/
+# Validation receipts (generated, not tracked)
+.quintet_receipts_phase1_validation/
+.quintet_validation_receipts/
